@@ -2,35 +2,71 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Lee Durbin</title>
-    <link>/tags/</link>
+    <link>/www.lddurbin.com/tags/</link>
     <description>Recent content in Tags on Lee Durbin</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate><atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 26 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="/www.lddurbin.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>R</title>
+      <link>/www.lddurbin.com/tags/r/</link>
+      <pubDate>Sat, 26 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/www.lddurbin.com/tags/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RDF</title>
+      <link>/www.lddurbin.com/tags/rdf/</link>
+      <pubDate>Sat, 26 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/www.lddurbin.com/tags/rdf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SPARQL</title>
+      <link>/www.lddurbin.com/tags/sparql/</link>
+      <pubDate>Sat, 26 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/www.lddurbin.com/tags/sparql/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Tidyverse</title>
+      <link>/www.lddurbin.com/tags/tidyverse/</link>
+      <pubDate>Sat, 26 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/www.lddurbin.com/tags/tidyverse/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>plot</title>
-      <link>/tags/plot/</link>
+      <link>/www.lddurbin.com/tags/plot/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
       
-      <guid>/tags/plot/</guid>
+      <guid>/www.lddurbin.com/tags/plot/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R Markdown</title>
-      <link>/tags/r-markdown/</link>
+      <link>/www.lddurbin.com/tags/r-markdown/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
       
-      <guid>/tags/r-markdown/</guid>
+      <guid>/www.lddurbin.com/tags/r-markdown/</guid>
       <description></description>
     </item>
     
     <item>
       <title>regression</title>
-      <link>/tags/regression/</link>
+      <link>/www.lddurbin.com/tags/regression/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
       
-      <guid>/tags/regression/</guid>
+      <guid>/www.lddurbin.com/tags/regression/</guid>
       <description></description>
     </item>
     

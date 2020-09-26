@@ -3,52 +3,82 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/about/</loc>
+    <loc>/www.lddurbin.com/categories/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/post/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/tags/r/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/tags/rdf/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/tags/sparql/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/tags/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/tags/tidyverse/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/categories/tutorial/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/2020/09/26/tweeting-about-new-history-books-using-r/</loc>
+    <lastmod>2020-09-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/www.lddurbin.com/about/</loc>
     <lastmod>2016-05-05T21:48:51-07:00</lastmod>
   </url>
   
   <url>
-    <loc>/categories/</loc>
+    <loc>/www.lddurbin.com/2015/07/23/hello-r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>/2015/07/23/hello-r-markdown/</loc>
+    <loc>/www.lddurbin.com/tags/plot/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>/</loc>
+    <loc>/www.lddurbin.com/categories/r/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>/tags/plot/</loc>
+    <loc>/www.lddurbin.com/tags/r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/</loc>
-    <lastmod>2015-07-23T21:13:14-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/categories/r/</loc>
-    <lastmod>2015-07-23T21:13:14-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/r-markdown/</loc>
-    <lastmod>2015-07-23T21:13:14-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/regression/</loc>
-    <lastmod>2015-07-23T21:13:14-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
+    <loc>/www.lddurbin.com/tags/regression/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   

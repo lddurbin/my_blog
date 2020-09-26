@@ -1,4 +1,4 @@
-baseurl = "/"
+baseurl = "www.lddurbin.com"
 languageCode = "en-us"
 title = "Lee Durbin"
 theme = "hugo-lithium"
