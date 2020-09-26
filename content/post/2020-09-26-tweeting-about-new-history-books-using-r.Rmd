@@ -12,3 +12,129 @@ tags:
   - Tidyverse
 ---
 
+## Where it all started
+At the end of 2016 I published [a blog post elsewhere](https://treigladau.wordpress.com/2016/12/18/his-story-today-her-story-tomorrow/) about the perceived lack of gender diversity in *History Today* Magazine. It was mostly well received and the magazine [published a response](https://medium.com/@historytoday1951/a-response-to-his-story-today-her-story-tomorrow-2a172f8090d1) where they revealed that "an estimated 80 per cent of unsolicited pitches and submissions received by *History Today* are from men". I re-subscribed to *History Today* recently, and things do seem to have improved in the four years since I last looked into this (I'm not taking credit for that, I'm just pleased to see it).
+
+After publishing that piece I began to wonder about gender diversity more broadly across history books published in the UK. I asked the British Library for data on this, but they told me that they don't record the gender of authors and other contributors to books logged in the [British National Bibliography](https://bnb.data.bl.uk/) (or BNB). Nevertheless, they did supply me with data on all history books published in the UK in 2015 and [I published another piece](https://treigladau.wordpress.com/2017/01/25/a-thousand-choices/) highlighting just some of the history books written by women I found in there. I was really only assuming gender based on names and some Googling of course, but I felt it was worth highlighting these books anyway.
+
+Now, several years later, I know enough about the R programming language that I felt able to tackle a more ambitious project: tweet out information about forthcoming history books from their BNB records. 
+
+This obviously has nothing to do with analysing the possible gender disparity among authors of history books published in the UK, but that's a fraught exercise. Sure, I can infer the gender of a given author using the [gender package](https://github.com/ropensci/gender) for R, but as the README points out this method is limited by its "reliance of data created by the state and its inability to see beyond the state-imposed gender binary". I still think there is value to this exercise, but I decided instead to use the British Library's data to share information about history books rather than to conduct any analysis. It'll be a fun thing to do, it consolidates a lot of what I've learned since I started using R back at the beginning of the year, and it provides a useful resource for me and other history buffs.
+
+In this post I'm going to introduce the tools I used to pull this off and how I obtained the data, then in future posts I'll go deeper into the technicalities of how I put them to use in order to query RDF files, enrich the data via Google Books, and automate tweets to my [\@ukhistorybooks](https://twitter.com/ukhistorybooks) account (do give it a follow if you're on Twitter).
+
+## Getting organised
+
+Let's start with the obvious: I'm doing this in R, so I'm using [RStudio](https://rstudio.com/) to manage everything. Here's my basic directory structure for the project:
+
+```
++-- .gitignore
++-- BNB.Rproj
++-- images
+|   +-- covers
++-- processed data
++-- raw data
+|   +-- zipped
++-- README.md
++-- scripts
+```
+
+The BNB.Rproj file is added when I create a new project in RStudio, and I created the .gitignore file myself to exclude certain files from my Git repository. I'm not going to talk much about Git/Github here, but it is an important part of my workflow and I may come back to it in future - all I wanted to point out here is how important it is to exclude any files holding credentials (e.g. Twitter API keys) from your repository, so make sure you put those in the relevant .gitignore file if you are using Github.
+
+What about those other directories? Well `images/covers` is where we'll (temporarily) store images of book covers, `processed data` is where we save the output *from* our code, `raw data/zipped` is where we'll store the input *for* our code (technically we'll use a pair of inputs, but more on that later), and `scripts` is where we keep our R scripts.
+
+## Packages galore
+
+As with any R project that involves a degree of complexity, we'll need to use some packages. Here are the 7 I'm using:
+
+* tidyverse
+* httr
+* jsonlite
+* rvest
+* virtuoso
+* R.utils
+* rtweet
+
+If you've spent any time writing R code you'll know that the [tidyverse](https://www.tidyverse.org/) package is essential. Tidyverse makes writing R code much easier than the alternative (base R), and I use it throughout this project. As with all packages, just install it using `install.packages("tidyverse")`.
+
+Although not a part of the core tidyverse package, there are several other package that come with it we'll use here: [httr](https://github.com/r-lib/httr), [jsonlite](https://github.com/jeroen/jsonlite), and [rvest](https://github.com/tidyverse/rvest). httr is what allows us to make requests to the Twitter and Google Books APIs, jsonlite helps us to decode the response from the Google Books API, and rvest helps us to traverse a webpage to download the files we'll need in the first place.
+
+A really important tool for working with the data we'll be getting from the British Library is called [Virtuoso.](https://virtuoso.openlinksw.com/) Don't ask me to explain what this is, all I know is that we can use it to query RDF files very fast and it has its own R package called, unsurprisingly, [virtuoso](https://github.com/ropensci/virtuoso). When I tried to read RDF files directly the performance was terrible, and I usually had to wait several minutes just to return a handful of records. Thankfully, importing the RDF files into Virtuoso and querying within that environment speeds things up significantly, so it's simply a must-have if you're working with RDF files.
+
+Not to be confused with the utils package that comes with R itself, the [R.utils](https://github.com/HenrikBengtsson/R.utils) package has one essential feature for us: gzip. You see, the British Library supplies the RDF files in a compressed format and that's great - but they compress them in a .zip file, whereas we want them as a .gzip because Virtuoso accepts .gzips and *not* .zips. It's a bit of a pain, but this one R.utils function makes life easier for us so make sure you've installed this package as well.
+
+Finally, as we'll be interacting with the Twitter API it'll help to use one of the R packages for that. I've chosen the [rtweet](https://github.com/ropensci/rtweet) package, but in the end I hardly used it - and you'll see why when I get to that part.
+
+## Getting what we need the easy way
+Each week the British Library Metadata Services Team uploads a file to [this webpage](https://www.bl.uk/collection-metadata/new-bnb-records). As I've already explained, this is compressed into a .zip file but the uncompressed format is a .rdf file. What is RDF? Well, it's a bit of a strange way of storing data using something called linked data - there's [a great article here](https://cran.r-project.org/web/packages/rdflib/vignettes/rdf_intro.html) that demystifies it a bit from a tidyverse perspective if that floats your boat. The important thing for us to be aware of is that we can query RDF data using SPARQL - yes, SPARQL. It's quite similar to writing SQL, but just because it's called SPARQL that doesn't make it more exciting than writing regular SQL - it has its own quirks that complicate things a bit, but we'll get to that.
+
+OK, so each week the good folk over at the British Library upload a RDF file compressed in a .zip format. That file contains the latest British National Bibliography records, and it's from there that we can get the data on history books that will ultimately get tweeted out. We need to download that file each week when it becomes available, but let's make life easier for ourselves and do so programatically using R. This is where rvest comes in handy.
+
+Now, we need to think carefully about this. As we start downloading these files there'll be some listed on the webpage that we already have stored locally - it's important therefore that we distinguish between files that we have, and files that we don't yet have. Let's get the ball rolling then, adding the following to a new R script (in the aforementioned `scripts` directory) that I've called download_BNB_data.R:
+
+```{r download_BNB_data_1, eval=FALSE}
+library("tidyverse")
+library("rvest")
+
+slug <- "/britishlibrary/~/media/bl/global/services/collection metadata/pdfs/bnb records rdf/"
+local_zips <- list.files("raw data/zipped", pattern = ".zip*") %>% str_to_lower()
+```
+
+What's this business about slugs? Well, that's the technical term for part of a URL that comes after the domain extension (in this case, that's https://www.bl.uk). After loading two of the libraries we need, we've stored that slug in a variable called, appropriately, slug, and that forms part of a URL that we'll use to download the compressed RDF files that we need. Note that this is different to the URL of the webpage where the compressed RDF files are actually listed.
+
+Next, we create another variable called local_zips where we list (via list.files utilising some pattern matching in regex) all of the .zip files we *already have* in our `raw data/zipped` subdirectory. This is important because we'll need to compare these files against the ones available for download on the British Library website - that's where the slug variable will be useful. I convert local_zips to lowercase here using the stringr package just to standardise everything, as we wouldn't want things to go unmatched because of some technicality.
+
+```{r download_BNB_data_2, eval=FALSE}
+BNB_page <- read_html("https://www.bl.uk/collection-metadata/new-bnb-records")
+BNB_urls_hashed <- BNB_page %>%
+  html_nodes("li") %>%
+  html_nodes("a") %>%
+  html_attr("href") %>% 
+  str_subset("/bnbrdf_n") 
+```
+
+This piece of code takes a little longer to run because it's traversing the webpage listing new BNB records - we're using the rvest package here for most of these functions. We first tell it to *read* the webpage listing new BNB records using read_html() and store that in a variable called BNB_page, and it's handy to create this variable because this is the bit that takes a while to run but once we have the relevant data we can develop much faster using the new variable.
+
+What do we want to find in this page? Well, we want the URLs for the compressed RDF files of course, so we step through the DOM (Document Object Model, or a way of structuring HTML like a tree). First we look for the HTML nodes that represent list items (li), then we want the URLs within those list items (a/href), and finally we use tidyverse's stringr package to narrow down the list of URLs to only those that contain "/bnbrdf_n". This, finally, gives us the hashed URLs to the compressed RDF files listed on this webpage, such as https://www.bl.uk/britishlibrary/~/media/bl/global/services/collection%20metadata/pdfs/bnb%20records%20rdf/bnbrdf_n3613.zip?la=en&hash=1EA3293B2296D47C8C5312CEB7B36FD6. 
+
+A note about pipes here for those of you unfamiliar with tidyverse. A pipe is denoted by the ` %>% ` symbol, and it creates a flow in our code that passes the data from one function to the next. Here, we start with our BNB_page variable (holding the entire DOM for the BNB page we just read) and pass it through a series of rvest functions. Because we're using these pipes we don't need to delcare the data we're using inside each function, which is why these functions only contain a single argument each. This takes a little while getting used to, but it makes for cleaner-looking code and saves you a few keystrokes by only having to declare your data once.
+
+Now, we need to clean up these URLs to get everything before the .zip extension and then we need to compare it to all the files we already have in our `raw data/zipped` subdirectory (remember how we listed everything in there and stored that into the local_zips variable earlier?). Let's start this task:
+
+```{r download_BNB_data_3, eval=FALSE}
+BNB_urls_truncated <- BNB_urls_hashed %>% str_replace("[^.zip]*$","")
+BNB_unmatched_indexes <- which(!BNB_urls_truncated %in% paste0(slug, local_zips))
+```
+
+BNB_urls_truncated does what you'd expect: it truncates the hashed URLs we grabbed earlier. Specifically, it removes everything after and including the .zip extension via stringr's str_replace() function and a bit of regex (I'm terrible at regex and had to Google this). So, where we previously had something like https://www.bl.uk/britishlibrary/~/media/bl/global/services/collection%20metadata/pdfs/bnb%20records%20rdf/bnbrdf_n3613.zip?la=en&hash=1EA3293B2296D47C8C5312CEB7B36FD6 we now have https://www.bl.uk/britishlibrary/~/media/bl/global/services/collection%20metadata/pdfs/bnb%20records%20rdf/bnbrdf_n3613. This is useful because it gives us a consistent string we can compre against that's structured like this: `slug/filename`. Neat, huh?
+
+What we need to know at this stage is: which items from the list of truncated URLs in BNB_urls_truncated refer to compressed RDF files that we *don't* already have? 
+
+To make that comparison, we need to concatenate our slug variable with the files listed in the `raw data/zipped` subdirectory via `paste0(slug, local_zips)`. This essentially replicates BNB_urls_truncated, but only for the files in the  `raw data/zipped` subdirectory. We then use the which() function to get the indexes of anything in BNB_urls_truncated that *doesn't* match `paste0(slug, local_zips)`, and in order for which() to return unmatched items we pop that exclamation mark in there to reverse the logic.
+
+So far we've been setting things in place, but now we can get down to business:
+
+```{r download_BNB_data_4, eval=FALSE}
+if(length(BNB_unmatched_indexes) > 0) {
+  target_slugs <- BNB_urls_hashed[BNB_unmatched_indexes]
+  target_urls <- lapply(paste0("https://www.bl.uk", target_slugs), URLencode) %>% unlist()
+  target_filenames <- basename(target_slugs) %>% str_replace("[^.zip]*$","")
+  
+  download.file(target_urls, destfile = paste0("raw data/zipped/", target_filenames), method = "libcurl")
+}
+```
+
+This is it, we're ready to download the files we need - but let's only do that if there are new files ready to download. How do we know if there are? Well, if our BNB_unmatched_indexes variable returned something then we know there's a file (or files) to download, so we proceed with our code on the condition that this variable is not of length 0. If it passes the test, we can get cracking.
+
+Let's start by getting the slugs of the files we need. We can do this by subsetting the BNB_urls_hashed vector using BNB_unmatched_indexes and storing the result in target_slugs. We can use this to create the URLs we need: in each case, we concatenate the domain name ("https://www.bl.uk") with a URL-encoded version of the target slug. URL encoding the slug basically replaces spaces with %20 so it's a valid URL, and we can apply the base R URLencode function onto each  concatenation using another handy base R function called lapply. This returns a list that we need to unlist to produce a vector that we can use - we do so by running it through unlist(). Yeah, there's a lot going on in this one line of code.
+
+Now we have our target URLs - usually a single URL. We also need a filename for the downloased .zip file, so we extract the filename(s) from target_slugs via basename(). Unfortunately this also gives us all of the text after the file extension, so we strip that out using str_replace() and some regex.
+
+Finally, we can use download.file() to do what you'd expect. We're using the "libcurl" method here to download multiple files at once if needed, and we're passing the necessary arguments: the target_urls, and the destination for the downloaded file(s) as a concatenation of the `raw data/zipped` subdirectory and the filename(s) we just stored in target_filenames.
+
+And that's it! We can now download the RDF files we don't already have simply by running this R script.
+
+## Next steps
+As you can tell, this is a complicated piece of work. As I'm going into a lot of detail to explain the process, I'll need to devote future blog posts to the remaining process. Next time we'll look at how to query the RDF data we just downloaded using SPARQL, using Virtuoso as described earlier.
+
+See you back here soon!
